@@ -1,0 +1,23 @@
+{
+  "name": "route53updater",
+  "version": "1.0.0",
+  "description": "update route 53 domains with public ip",
+  "main": "src/handler.js",
+  "dependencies": {
+    "serverless": "^1.39.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ajaxe/route53updater.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ajaxe/route53updater/issues"
+  },
+  "homepage": "https://github.com/ajaxe/route53updater#readme"
+}

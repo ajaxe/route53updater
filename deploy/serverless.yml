@@ -2,6 +2,7 @@
 
 custom:
   serviceName: Route53Updater
+  shared_key: ${file(../secrets/shared_key.json):shared_key}
 service:
   name: ${self:custom.serviceName}
   awsKmsKeyArn: arn:aws:kms:us-east-1:257953708933:key/b9cb1425-986a-4aec-9a83-72cdc6dba044
@@ -47,6 +48,8 @@ functions:
     name: ${self:custom.serviceName}-${self:provider.stage}-updater
     description: Route53 domain updater
     memorySize: 128
+    environment:
+      SHARED_KEY: ${self:custom.shared_key}
     events:
       - http:
           path: /

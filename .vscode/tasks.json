@@ -6,7 +6,21 @@
         {
             "label": "Go - build lambda",
             "type": "shell",
-            "command": "dir"
+            "command": "${workspaceFolder}\\lambda\\build-lambda.cmd",
+            "options": { "cwd": "${workspaceFolder}\\lambda\\"}
+        },
+        {
+            "label": "Deploy Lambda - dev",
+            "type": "shell",
+            "command": "serverless",
+            "options": {
+                "cwd": "${workspaceFolder}\\deploy\\"
+            },
+            "args": [
+                "deploy",
+                "--stage",
+                "dev"
+            ]
         }
     ]
 }

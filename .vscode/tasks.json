@@ -4,10 +4,34 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Go - build CLI",
+            "type": "shell",
+            "command": "go build",
+            "options": { "cwd": "${workspaceFolder}\\cli\\",
+                "env": {
+                    "GOOS": "windows"
+                }
+            },
+            "problemMatcher": "$go",
+        },
+        {
+            "label": "Go - [Linux] Build CLI",
+            "type": "shell",
+            "command": "go build",
+            "options": { "cwd": "${workspaceFolder}\\cli\\",
+                "env": {
+                    "GOOS": "linux",
+                    "GOARCH": "arm"
+                }
+            },
+            "problemMatcher": "$go",
+        },
+        {
             "label": "Go - build lambda",
             "type": "shell",
             "command": "${workspaceFolder}\\lambda\\build-lambda.cmd",
-            "options": { "cwd": "${workspaceFolder}\\lambda\\"}
+            "options": { "cwd": "${workspaceFolder}\\lambda\\" },
+            "problemMatcher": "$go"
         },
         {
             "label": "Deploy Lambda - dev",
@@ -20,7 +44,8 @@
                 "deploy",
                 "--stage",
                 "dev"
-            ]
+            ],
+            "problemMatcher": "$node-sass"
         }
     ]
 }

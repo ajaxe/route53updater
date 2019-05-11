@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"flag"
@@ -11,7 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ajaxe/route53updater/cli/shared"
+	"github.com/ajaxe/route53updater/pkg/logging"
+	"github.com/ajaxe/route53updater/pkg/shared"
 )
 
 var ipCheckerURL = "http://checkip.amazonaws.com/"
@@ -20,7 +22,6 @@ func main() {
 	fs := flag.NewFlagSet("updater", flag.ExitOnError)
 	lambdaURL := fs.String("url", "", "lambda url to invoke")
 	psk := fs.String("psk", "", "pre shared key used to identify the caller to the lambda")
-	clientID := fs.String("client-id", "", "client id")
 	fs.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: route53updater [options]
 
@@ -35,14 +36,26 @@ Options are:
 	fs.Parse(os.Args[1:])
 	if fs.NArg() != 0 {
 		fs.Usage()
+		os.Exit(1)
 	}
 
 	cfg := &config{
-		URL:      *lambdaURL,
-		PSK:      *psk,
-		ClientID: *clientID,
+		URL: *lambdaURL,
+		PSK: *psk,
+	}
+
+	if fs.Parsed() {
+		if len(cfg.URL) == 0 {
+			logging.DBGLogger.Print("URL parameter is required")
+			return
+		}
+		if len(cfg.PSK) == 0 {
+			logging.DBGLogger.Print("PSK parameter is required")
+			return
+		}
 	}
 	ip, _ := getPublicIP()
+
 	invokeUpdateLambda(cfg, ip)
 }
 
@@ -53,10 +66,11 @@ func invokeUpdateLambda(cfg *config, IP string) error {
 		Nonce:   n,
 		HashKey: getHash(n, cfg),
 	}
-	fmt.Println("ip:", IP)
+	logging.DBGLogger.Println("ip:", IP)
 	b, _ := json.MarshalIndent(&p, "", "  ")
-	fmt.Println(string(b))
-	return nil
+	logging.DBGLogger.Println(string(b))
+	_, err := http.Post(cfg.URL, "application/json", bytes.NewReader(b))
+	return err
 }
 
 func getPublicIP() (string, error) {

@@ -2,10 +2,10 @@
 
 custom:
   serviceName: Route53Updater
+  hostedZoneId: ZHQI7S8NKQBRD
   shared_key: ${file(../secrets/shared_key.json):shared_key}
 service:
   name: ${self:custom.serviceName}
-  awsKmsKeyArn: arn:aws:kms:us-east-1:257953708933:key/b9cb1425-986a-4aec-9a83-72cdc6dba044
 
 frameworkVersion: ">=1.0.0 <2.0.0"
 
@@ -16,8 +16,6 @@ provider:
   region: us-east-1 # Overwrite the default region used. Default is us-east-1
   stackName: ${self:custom.serviceName}-stack # Use a custom name for the CloudFormation stack
   apiName: ${self:custom.serviceName}-api # Use a custom name for the API Gateway API
-  # profile: production # The default AWS profile to use with this service
-  # memorySize: 128 # Overwrite the default memory size. Default is 1024 -- defined on each function
   timeout: 10 # The default is 6 seconds. Note: API Gateway current maximum is 30 seconds
   logRetentionInDays: 1 # Set the default RetentionInDays for a CloudWatch LogGroup
   deploymentBucket:
@@ -36,6 +34,11 @@ provider:
       rateLimit: 50
   stackTags: # Optional CF stack tags
     key: value
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'route53:ChangeResourceRecordSets'
+      Resource: 'arn:aws:route53:::hostedzone/ZHQI7S8NKQBRD'
 
 package:
   artifact: ../dist/lambda/route53updater.zip

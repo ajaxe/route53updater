@@ -3,16 +3,23 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 	"os"
 
-	"github.com/ajaxe/route53updater/cli/shared"
 	"github.com/ajaxe/route53updater/lambda/services"
+	"github.com/ajaxe/route53updater/pkg/logging"
+	"github.com/ajaxe/route53updater/pkg/shared"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-func HandleRequest(ctx context.Context, r events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func HandleRequest(ctx context.Context, r events.APIGatewayProxyRequest) (resp events.APIGatewayProxyResponse, e error) {
+	var res events.APIGatewayProxyResponse
+	logging.DBGLogger.Println("handle request: start")
+	defer (func() {
+		logging.DBGLogger.Printf("handle request: end. result status: %d", resp.StatusCode)
+	})()
+
 	if len(r.Body) == 0 {
 		return handleResponse(400, "Missing request payload"), nil
 	}
@@ -26,21 +33,24 @@ func HandleRequest(ctx context.Context, r events.APIGatewayProxyRequest) (events
 		return handleErrorResponse(err), nil
 	}
 	svc := services.NewUpdaterService()
-	svc.Update(data.IP)
-	res := events.APIGatewayProxyResponse{}
+	err = svc.Update(data.IP)
+	if err != nil {
+		return handleErrorResponse(err), nil
+	}
+	res = events.APIGatewayProxyResponse{}
 	res.StatusCode = 200
 	return res, nil
 }
 
 func handleErrorResponse(err error) events.APIGatewayProxyResponse {
-	log.Printf("error response: %v", err)
+	logging.DBGLogger.Printf("error response: %v", err)
 	return handleResponse(500, "Internal Server Error")
 }
 
 func handleResponse(statusCode int, body string) events.APIGatewayProxyResponse {
 	return events.APIGatewayProxyResponse{
 		StatusCode: statusCode,
-		Body:       body,
+		Body:       fmt.Sprintf("{ \"message\": \"%s\" }", body),
 	}
 }
 

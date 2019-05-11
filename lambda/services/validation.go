@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ajaxe/route53updater/cli/shared"
+	"github.com/ajaxe/route53updater/pkg/shared"
 )
 
 const nonceSkew = 45

@@ -4,10 +4,9 @@ custom:
   serviceName: Route53Updater
   hostedZoneId: ZHQI7S8NKQBRD
   shared_key: ${file(../secrets/shared_key.json):shared_key}
-service:
-  name: ${self:custom.serviceName}
+service: ${self:custom.serviceName}
 
-frameworkVersion: ">=1.0.0 <2.0.0"
+frameworkVersion: "2"
 
 provider:
   name: aws

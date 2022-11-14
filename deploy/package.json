@@ -4,7 +4,7 @@
   "description": "update route 53 domains with public ip",
   "main": "src/handler.js",
   "dependencies": {
-    "serverless": "^2.17.0"
+    "serverless": "^3.24.1"
   },
   "devDependencies": {},
   "scripts": {

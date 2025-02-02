@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -79,7 +79,7 @@ func getPublicIP() (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
+	b, _ := io.ReadAll(resp.Body)
 	ip := string(b)
 	if len(ip) == 0 {
 		return "", fmt.Errorf("unable to parse ip string")

@@ -16,7 +16,9 @@ dist
 node_modules
 secrets
 .serverless
+.terraform
 cli
 main
 route53updater
 route53updater.zip
+!route53updater/

@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/ajaxe/route53updater/pkg/logging"
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,26 +11,30 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 )
 
-const (
-	awsRegion    = "us-east-1"
-	hostedZoneID = "ZHQI7S8NKQBRD"
-)
-
-var subDomainsToUpdate = []string{"docker-registry", "faas", "offsite"}
-
 type UpdaterService interface {
 	Update(clientIdentifier string) error
 }
 
 func NewUpdaterService() UpdaterService {
-	return &route53UpdaterService{}
+	region, _ := os.LookupEnv("APP_AWS_REGION")
+	zoneID, _ := os.LookupEnv("HOSTED_ZONE_ID")
+
+	logging.DBGLogger.Printf("updater service: region=%s | zoneId=%s", region, zoneID)
+
+	return &route53UpdaterService{
+		awsRegion:    region,
+		hostedZoneID: zoneID,
+	}
 }
 
-type route53UpdaterService struct{}
+type route53UpdaterService struct {
+	awsRegion    string
+	hostedZoneID string
+}
 
 func (u *route53UpdaterService) Update(ip string) error {
 	logging.DBGLogger.Printf("update: start")
-	sess, err := session.NewSession(aws.NewConfig().WithRegion(awsRegion))
+	sess, err := session.NewSession(aws.NewConfig().WithRegion(u.awsRegion))
 	if err != nil {
 		return fmt.Errorf("update error: %v", err)
 	}
@@ -45,7 +50,7 @@ func (u *route53UpdaterService) Update(ip string) error {
 
 func (u *route53UpdaterService) getChangeInput(ip string) *route53.ChangeResourceRecordSetsInput {
 	return &route53.ChangeResourceRecordSetsInput{
-		HostedZoneId: aws.String(hostedZoneID),
+		HostedZoneId: aws.String(u.hostedZoneID),
 		ChangeBatch: &route53.ChangeBatch{
 			Changes: u.getDomainUpsertChanges(ip),
 		},
@@ -55,6 +60,9 @@ func (u *route53UpdaterService) getChangeInput(ip string) *route53.ChangeResourc
 func (u *route53UpdaterService) getDomainUpsertChanges(ip string) []*route53.Change {
 	apogeeDomain := ".apogee-dev.com"
 	var changes []*route53.Change
+
+	logging.DBGLogger.Printf("getDomainUpsertChanges: setting ip: %s", ip)
+
 	for _, a := range subDomainsToUpdate {
 		d := fmt.Sprintf("%s%s", a, apogeeDomain)
 		logging.DBGLogger.Printf("getDomainUpsertChanges: adding domain: %s", d)
